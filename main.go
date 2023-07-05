@@ -32,10 +32,10 @@ func DataHandler() []string {
 
 	if len(os.Args) > 3 {
 		fmt.Println("Too many arguments.")
-		return []string{}
+		return nil
 	} else if len(os.Args) == 2 {
 		fmt.Println("You need one more argument for result text file.")
-		return []string{}
+		return nil
 	} else if len(os.Args) != 1 {
 
 		data, err := os.ReadFile(os.Args[1])
@@ -47,7 +47,7 @@ func DataHandler() []string {
 		return dataArr
 	} else {
 		fmt.Println("Error missing file name and result text name.")
-		return []string{}
+		return nil
 	}
 }
 
