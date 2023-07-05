@@ -29,13 +29,26 @@ func ToDecimal(s string, base int) {
 }
 
 func DataHandler() []string {
-	data, err := os.ReadFile(os.Args[1])
-	if err != nil {
-		fmt.Println("File Not Found!")
+
+	if len(os.Args) > 3 {
+		fmt.Println("Too many arguments.")
+		return []string{}
+	} else if len(os.Args) == 2 {
+		fmt.Println("You need one more argument for result text file.")
+		return []string{}
+	} else if len(os.Args) != 1 {
+
+		data, err := os.ReadFile(os.Args[1])
+		if err != nil {
+			fmt.Println("File Not Found!")
+		}
+		dataArr := strings.Fields(string(data))
+		// fmt.Println(dataArr)
+		return dataArr
+	} else {
+		fmt.Println("Error missing file name and result text name.")
+		return []string{}
 	}
-	dataArr := strings.Fields(string(data))
-	// fmt.Println(dataArr)
-	return dataArr
 }
 
 func main() {
