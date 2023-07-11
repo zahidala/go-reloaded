@@ -7,17 +7,39 @@ import (
 	"strings"
 )
 
+func remove(arr []string, index, count int) {
+	temp := append(arr[:index], arr[index+count:]...)
+	fmt.Println("temp: ", temp)
+	arr = temp
+}
+
+func FilterArr(arr []string) []string {
+	var filteredArr []string
+	for _, s := range arr {
+		if s != "" {
+			filteredArr = append(filteredArr, s)
+		}
+	}
+	return filteredArr
+}
+
 func CheckArgsAndRun(s []string) {
 	for i := 0; i < len(s); i++ {
 		if s[i] == "(hex)" {
-			ToDecimal(s[i-1], 16)
+			result := ToDecimal(s[i-1], 16)
+			s[i-1] = result
+			remove(s, i, 1)
+			s[len(s)-1] = ""
 		} else if s[i] == "(bin)" {
-			ToDecimal(s[i-1], 2)
+			result := ToDecimal(s[i-1], 2)
+			s[i-1] = result
+			remove(s, i, 1)
+			s[len(s)-1] = ""
 		}
 	}
 }
 
-func ToDecimal(s string, base int) {
+func ToDecimal(s string, base int) string {
 
 	num, err := strconv.ParseInt(s, base, 64)
 
@@ -25,7 +47,8 @@ func ToDecimal(s string, base int) {
 		fmt.Println("Error: Can't convert text to a num!")
 	}
 
-	fmt.Println(num)
+	str := strconv.Itoa(int(num))
+	return str
 }
 
 func DataHandler() []string {
@@ -43,7 +66,7 @@ func DataHandler() []string {
 			fmt.Println("File Not Found!")
 		}
 		dataArr := strings.Fields(string(data))
-		// fmt.Println(dataArr)
+		fmt.Println("original: ", dataArr)
 		return dataArr
 	} else {
 		fmt.Println("Error missing file name and result text name.")
@@ -52,6 +75,9 @@ func DataHandler() []string {
 }
 
 func main() {
-	arr := DataHandler()
-	CheckArgsAndRun(arr)
+	initialArr := DataHandler()
+	CheckArgsAndRun(initialArr)
+	finalArr := FilterArr(initialArr)
+	fmt.Println("final: ", finalArr)
+	os.WriteFile("result.txt", []byte(strings.Join(finalArr, " ")), 0644)
 }
