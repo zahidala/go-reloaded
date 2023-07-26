@@ -5,13 +5,19 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func remove(arr []string, index, count int) {
-	temp := append(arr[:index], arr[index+count:]...)
-	fmt.Println("temp: ", temp)
-	arr = temp
+	if arr[index] == "(up)" || arr[index] == "(low)" || arr[index] == "(cap)" || arr[index] == "(bin)" || arr[index] == "(hex)" {
+		arr[index] = ""
+	} else if strings.Contains(arr[index], "(up,") || strings.Contains(arr[index], "(low,") || strings.Contains(arr[index], "(cap,") {
+		arr[index] = ""
+		arr[index+1] = ""
+	}
 }
+
+// Remove empty spaces in slice.
 
 func FilterArr(arr []string) []string {
 	var filteredArr []string
@@ -25,16 +31,29 @@ func FilterArr(arr []string) []string {
 
 func CheckArgsAndRun(s []string) {
 	for i := 0; i < len(s); i++ {
-		if s[i] == "(hex)" {
+
+		Punctuation(s, i)
+
+		switch s[i] {
+
+		case "(hex)":
 			result := ToDecimal(s[i-1], 16)
 			s[i-1] = result
 			remove(s, i, 1)
-			s[len(s)-1] = ""
-		} else if s[i] == "(bin)" {
+
+		case "(bin)":
 			result := ToDecimal(s[i-1], 2)
 			s[i-1] = result
 			remove(s, i, 1)
-			s[len(s)-1] = ""
+
+		case "(up)", "(up,":
+			ToStringMethod(s, i, strings.ToUpper)
+
+		case "(low)", "(low,":
+			ToStringMethod(s, i, strings.ToUpper)
+
+		case "(cap)", "(cap,":
+			ToStringMethod(s, i, strings.Title)
 		}
 	}
 }
@@ -51,16 +70,54 @@ func ToDecimal(s string, base int) string {
 	return str
 }
 
+func ToStringMethod(s []string, i int, fn func(string) string) {
+
+	num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
+
+	if err != nil {
+		s[i-1] = fn(s[i-1])
+		remove(s, i, 1)
+	} else {
+		// fmt.Println("Num converted successfully:", num)
+		for index := i - 1; index >= i-num; index-- {
+			s[index] = fn(s[index])
+			fmt.Println("num", num)
+		}
+		remove(s, i, num)
+	}
+}
+
+func Punctuation(arr []string, i int) {
+
+	puncArr := []rune(arr[i])
+
+	for _, c := range puncArr {
+		if unicode.IsPunct(c) {
+			if c != '\'' {
+				// fmt.Println("rune", string(c))
+				// arr[i-1] = arr[i-1] + arr[i]
+				// arr[i] = ""
+				getEachPunc := arr[i]
+				fmt.Println(string(getEachPunc[0]))
+				arr[i-1] = arr[i-1] + string(getEachPunc[0])
+				removeExtraPunc := getEachPunc[1:]
+				arr[i] = removeExtraPunc
+			}
+		}
+	}
+
+}
+
 func DataHandler() []string {
 
-	if len(os.Args) > 3 {
+	switch {
+	case len(os.Args) > 3:
 		fmt.Println("Too many arguments.")
 		return nil
-	} else if len(os.Args) == 2 {
+	case len(os.Args) == 2:
 		fmt.Println("You need one more argument for result text file.")
 		return nil
-	} else if len(os.Args) != 1 {
-
+	case len(os.Args) != 1:
 		data, err := os.ReadFile(os.Args[1])
 		if err != nil {
 			fmt.Println("File Not Found!")
@@ -68,7 +125,7 @@ func DataHandler() []string {
 		dataArr := strings.Fields(string(data))
 		fmt.Println("original: ", dataArr)
 		return dataArr
-	} else {
+	default:
 		fmt.Println("Error missing file name and result text name.")
 		return nil
 	}
