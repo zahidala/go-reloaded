@@ -32,7 +32,9 @@ func FilterArr(arr []string) []string {
 func CheckArgsAndRun(s []string) {
 	for i := 0; i < len(s); i++ {
 
-		Punctuation(s, i)
+		// PunctuationFixer(s, i)
+
+		AOrAnChecker(s, i)
 
 		switch s[i] {
 
@@ -50,7 +52,7 @@ func CheckArgsAndRun(s []string) {
 			ToStringMethod(s, i, strings.ToUpper)
 
 		case "(low)", "(low,":
-			ToStringMethod(s, i, strings.ToUpper)
+			ToStringMethod(s, i, strings.ToLower)
 
 		case "(cap)", "(cap,":
 			ToStringMethod(s, i, strings.Title)
@@ -87,7 +89,7 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 	}
 }
 
-func Punctuation(arr []string, i int) {
+func PunctuationFixer(arr []string, i int) {
 
 	puncArr := []rune(arr[i])
 
@@ -106,6 +108,18 @@ func Punctuation(arr []string, i int) {
 		}
 	}
 
+}
+
+func AOrAnChecker(arr []string, i int) {
+
+	switch strings.ToLower(arr[i]) {
+	case "a":
+		nextWord := arr[i+1]
+		firstLetter := string(nextWord[0])
+		if strings.ContainsAny(firstLetter, "aeiouh") {
+			arr[i] = arr[i] + "n"
+		}
+	}
 }
 
 func DataHandler() []string {
