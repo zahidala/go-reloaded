@@ -9,9 +9,12 @@ import (
 )
 
 func remove(arr []string, index, count int) {
-	if arr[index] == "(up)" || arr[index] == "(low)" || arr[index] == "(cap)" || arr[index] == "(bin)" || arr[index] == "(hex)" {
+	switch arr[index] {
+	case "(up)", "(low)", "(cap)", "(bin)", "(hex)":
 		arr[index] = ""
-	} else if strings.Contains(arr[index], "(up,") || strings.Contains(arr[index], "(low,") || strings.Contains(arr[index], "(cap,") {
+	}
+
+	if strings.Contains(arr[index], "(up,") || strings.Contains(arr[index], "(low,") || strings.Contains(arr[index], "(cap,") {
 		arr[index] = ""
 		arr[index+1] = ""
 	}
@@ -31,10 +34,6 @@ func FilterArr(arr []string) []string {
 
 func CheckArgsAndRun(s []string) {
 	for i := 0; i < len(s); i++ {
-
-		PunctuationFixer(s, i)
-
-		AOrAnChecker(s, i)
 
 		switch s[i] {
 
@@ -57,7 +56,11 @@ func CheckArgsAndRun(s []string) {
 		case "(cap)", "(cap,":
 			ToStringMethod(s, i, strings.Title)
 		}
+
+		PunctuationFixer(s, i)
+		AOrAnChecker(s, i)
 	}
+
 	finalArr := FilterArr(s)
 	fmt.Println("final:", finalArr)
 	s = finalArr
@@ -78,18 +81,22 @@ func ToDecimal(s string, base int) string {
 
 func ToStringMethod(s []string, i int, fn func(string) string) {
 
-	num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
-
-	if err != nil {
-		fmt.Println("<INFO> No number present or invalid number! Converting just the word before the argument...")
-		s[i-1] = fn(s[i-1])
-		remove(s, i, 1)
-	} else {
+	if strings.Contains(s[i], "(up,") || strings.Contains(s[i], "(low,") || strings.Contains(s[i], "(cap,") {
+		num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
 		for index := i - 1; index >= i-num; index-- {
 			s[index] = fn(s[index])
-			// fmt.Println("num", num)
 		}
 		remove(s, i, num)
+
+		if err != nil {
+			fmt.Println("<ERROR> Invalid number passed to argument...Converting just the word before the argument instead!")
+			s[i-1] = fn(s[i-1])
+			remove(s, i, 1)
+		}
+
+	} else {
+		s[i-1] = fn(s[i-1])
+		remove(s, i, 1)
 	}
 }
 
@@ -112,6 +119,8 @@ func PunctuationFixer(arr []string, i int) {
 					// fmt.Println(removeExtraPunc)
 					arr[i] = removeExtraPunc
 				}
+			} else {
+				fmt.Println(string(c))
 			}
 		}
 	}
