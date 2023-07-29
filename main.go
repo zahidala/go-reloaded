@@ -32,7 +32,7 @@ func FilterArr(arr []string) []string {
 func CheckArgsAndRun(s []string) {
 	for i := 0; i < len(s); i++ {
 
-		// PunctuationFixer(s, i)
+		PunctuationFixer(s, i)
 
 		AOrAnChecker(s, i)
 
@@ -58,6 +58,9 @@ func CheckArgsAndRun(s []string) {
 			ToStringMethod(s, i, strings.Title)
 		}
 	}
+	finalArr := FilterArr(s)
+	fmt.Println("final:", finalArr)
+	s = finalArr
 }
 
 func ToDecimal(s string, base int) string {
@@ -65,7 +68,8 @@ func ToDecimal(s string, base int) string {
 	num, err := strconv.ParseInt(s, base, 64)
 
 	if err != nil {
-		fmt.Println("Error: Can't convert text to a num!")
+		fmt.Println("<ERROR> Can't convert text to a number!")
+		return "<ERROR>"
 	}
 
 	str := strconv.Itoa(int(num))
@@ -77,13 +81,13 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 	num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
 
 	if err != nil {
+		fmt.Println("<INFO> No number present or invalid number! Converting just the word before the argument...")
 		s[i-1] = fn(s[i-1])
 		remove(s, i, 1)
 	} else {
-		// fmt.Println("Num converted successfully:", num)
 		for index := i - 1; index >= i-num; index-- {
 			s[index] = fn(s[index])
-			fmt.Println("num", num)
+			// fmt.Println("num", num)
 		}
 		remove(s, i, num)
 	}
@@ -100,10 +104,14 @@ func PunctuationFixer(arr []string, i int) {
 				// arr[i-1] = arr[i-1] + arr[i]
 				// arr[i] = ""
 				getEachPunc := arr[i]
-				fmt.Println(string(getEachPunc[0]))
-				arr[i-1] = arr[i-1] + string(getEachPunc[0])
-				removeExtraPunc := getEachPunc[1:]
-				arr[i] = removeExtraPunc
+				// fmt.Println("punc", string(puncRecheckArr))
+				if unicode.IsPunct(puncArr[0]) {
+					// fmt.Println(string(getEachPunc[0]))
+					arr[i-1] = arr[i-1] + string(getEachPunc[0])
+					removeExtraPunc := getEachPunc[1:]
+					// fmt.Println(removeExtraPunc)
+					arr[i] = removeExtraPunc
+				}
 			}
 		}
 	}
@@ -146,9 +154,8 @@ func DataHandler() []string {
 }
 
 func main() {
-	initialArr := DataHandler()
-	CheckArgsAndRun(initialArr)
-	finalArr := FilterArr(initialArr)
-	fmt.Println("final: ", finalArr)
-	os.WriteFile("result.txt", []byte(strings.Join(finalArr, " ")), 0644)
+	arr := DataHandler()
+	CheckArgsAndRun(arr)
+	os.WriteFile("result.txt", []byte(strings.Join(arr, " ")), 0644)
+	// fmt.Println("<INFO> All done! Please check results.txt for final results.")
 }
