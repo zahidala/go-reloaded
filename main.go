@@ -137,9 +137,13 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 // }
 
 func PunctuationFixer(arr []string) []string {
-	regex := regexp.MustCompile(`\s([\s.,!?:;]+)[.,!?:;]*`)
-	fixedString := regex.ReplaceAllString(strings.Join(arr, " "), "$1")
-	finalArr := strings.Fields(fixedString)
+	firstCheck := regexp.MustCompile(`\s([\s.,!?:;]+)[.,!?:;]*`)
+	fixedString := firstCheck.ReplaceAllString(strings.Join(arr, " "), "$1")
+
+	secondCheck := regexp.MustCompile(`([.,!?:;]+)([^.,!?;'])`)
+	finalString := secondCheck.ReplaceAllString(fixedString, "$1 $2")
+
+	finalArr := strings.Fields(finalString)
 	return finalArr
 }
 
