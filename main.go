@@ -66,7 +66,7 @@ func CheckArgsAndRun(s []string) {
 		finalArr := FilterArr(s)
 		fmt.Println("final:", finalArr)
 		s = finalArr
-		os.WriteFile("result.txt", []byte(strings.Join(s, " ")), 0644)
+		os.WriteFile(os.Args[2], []byte(strings.Join(s, " ")), 0644)
 		fmt.Println("<INFO> All done! Please check results.txt for final results.")
 	} else {
 		fmt.Println("<ERROR> Need to pass a word and an argument to start!")
@@ -78,8 +78,8 @@ func ToDecimal(s string, base int) string {
 	num, err := strconv.ParseInt(s, base, 64)
 
 	if err != nil {
-		fmt.Println("<ERROR> Can't convert text to a number!")
-		return "<ERROR>"
+		fmt.Printf("<ERROR> Can't convert \"%s\" to a number!\n", s)
+		os.Exit(0)
 	}
 
 	str := strconv.Itoa(int(num))
@@ -91,19 +91,19 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 	if strings.Contains(s[i], "(up,") || strings.Contains(s[i], "(low,") || strings.Contains(s[i], "(cap,") {
 		num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
 		if (num - 1) > i-1 {
-			fmt.Println("<ERROR> Not enough words to convert")
+			fmt.Println("<ERROR> Not enough words to convert according to the number passed.")
 			os.Exit(0)
 		}
+
+		if err != nil {
+			fmt.Printf("<ERROR> \"%s\" is a invalid number that is passed to the argument.\n", s[i+1][:len(s[i+1])-1])
+			os.Exit(0)
+		}
+
 		for index := i - 1; index >= i-num; index-- {
 			s[index] = fn(s[index])
 		}
 		remove(s, i, num)
-
-		if err != nil {
-			fmt.Println("<ERROR> Invalid number passed to argument...Converting just the word before the argument instead!")
-			s[i-1] = fn(s[i-1])
-			remove(s, i, 1)
-		}
 
 	} else {
 		s[i-1] = fn(s[i-1])
@@ -112,9 +112,12 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 }
 
 func PunctuationFixer(arr []string) []string {
+
+	// For cases where theres space before punctuation.
 	firstCheck := regexp.MustCompile(`\s([\s.,!?:;]+)[.,!?:;]*`)
 	fixedString := firstCheck.ReplaceAllString(strings.Join(arr, " "), "$1")
 
+	// For cases where theres no space after punctuation.
 	secondCheck := regexp.MustCompile(`([.,!?:;]+)([^.,!?;'])`)
 	finalString := secondCheck.ReplaceAllString(fixedString, "$1 $2")
 
@@ -145,21 +148,43 @@ func DataHandler() []string {
 
 	switch {
 	case len(os.Args) > 3:
-		fmt.Println("Too many arguments.")
+		fmt.Println("<ERROR> Too many arguments.")
+		os.Exit(0)
 		return nil
 	case len(os.Args) == 2:
-		fmt.Println("You need one more argument for result text file.")
+		fmt.Println("<ERROR> You need one more argument for result text file.")
+		os.Exit(0)
 		return nil
-	case len(os.Args) != 1:
-		data, err := os.ReadFile(os.Args[1])
-		if err != nil {
-			fmt.Println("File Not Found!")
+	case len(os.Args) == 3:
+		if !strings.HasSuffix(os.Args[1], ".txt") {
+			fmt.Println("<ERROR> Sample file name must end in .txt!")
+			os.Exit(0)
 		}
+
+		data, err := os.ReadFile(os.Args[1])
+
+		if err != nil {
+			fmt.Println("<ERROR> File Not Found!")
+			os.Exit(0)
+		}
+
+		if !strings.HasSuffix(os.Args[2], ".txt") {
+			fmt.Println("<ERROR> Result file name must end in .txt!")
+			os.Exit(0)
+		}
+
 		dataArr := strings.Fields(string(data))
+
+		if len(dataArr) == 0 && err == nil {
+			fmt.Println("<ERROR> No text found in the sample file! Exiting the program.")
+			os.Exit(0)
+		}
+
 		fmt.Println("original: ", dataArr)
 		return dataArr
 	default:
-		fmt.Println("Error missing file name and result text name.")
+		fmt.Println("<ERROR> Missing file name and result text name.")
+		os.Exit(0)
 		return nil
 	}
 }
