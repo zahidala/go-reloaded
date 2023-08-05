@@ -36,9 +36,6 @@ func CheckArgsAndRun(s []string) {
 	if len(s) != 1 {
 		for i := 0; i < len(s); i++ {
 
-			s = QuoteFixer(s)
-			// PunctuationFixer(s, i)
-
 			switch s[i] {
 
 			case "(hex)":
@@ -63,6 +60,8 @@ func CheckArgsAndRun(s []string) {
 
 			AOrAnChecker(s, i)
 		}
+
+		s = QuoteFixer(s)
 		s = PunctuationFixer(s)
 		finalArr := FilterArr(s)
 		fmt.Println("final:", finalArr)
@@ -91,7 +90,7 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 
 	if strings.Contains(s[i], "(up,") || strings.Contains(s[i], "(low,") || strings.Contains(s[i], "(cap,") {
 		num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
-		if num > i-1 {
+		if (num - 1) > i-1 {
 			fmt.Println("<ERROR> Not enough words to convert")
 			os.Exit(0)
 		}
@@ -111,30 +110,6 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 		remove(s, i, 1)
 	}
 }
-
-// func PunctuationFixer(arr []string, i int) {
-
-// 	puncArr := []rune(arr[i])
-
-// 	for _, c := range puncArr {
-// 		if unicode.IsPunct(c) {
-// 			if c != '\'' && c != '(' && c != ')' {
-// 				// fmt.Println("rune", string(c))
-// 				// arr[i-1] = arr[i-1] + arr[i]
-// 				// arr[i] = ""
-// 				getEachPunc := arr[i]
-// 				// fmt.Println("punc:", getEachPunc)
-// 				if unicode.IsPunct(puncArr[0]) {
-// 					// fmt.Println(string(getEachPunc[0]))
-// 					arr[i-1] = arr[i-1] + string(getEachPunc[0])
-// 					removeExtraPunc := getEachPunc[1:]
-// 					// fmt.Println(removeExtraPunc)
-// 					arr[i] = removeExtraPunc
-// 				}
-// 			}
-// 		}
-// 	}
-// }
 
 func PunctuationFixer(arr []string) []string {
 	firstCheck := regexp.MustCompile(`\s([\s.,!?:;]+)[.,!?:;]*`)
