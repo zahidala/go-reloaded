@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 func remove(arr []string, index, count int) {
@@ -33,37 +33,45 @@ func FilterArr(arr []string) []string {
 }
 
 func CheckArgsAndRun(s []string) {
-	for i := 0; i < len(s); i++ {
+	if len(s) != 1 {
+		for i := 0; i < len(s); i++ {
 
-		switch s[i] {
+			s = QuoteFixer(s)
+			// PunctuationFixer(s, i)
 
-		case "(hex)":
-			result := ToDecimal(s[i-1], 16)
-			s[i-1] = result
-			remove(s, i, 1)
+			switch s[i] {
 
-		case "(bin)":
-			result := ToDecimal(s[i-1], 2)
-			s[i-1] = result
-			remove(s, i, 1)
+			case "(hex)":
+				result := ToDecimal(s[i-1], 16)
+				s[i-1] = result
+				remove(s, i, 1)
 
-		case "(up)", "(up,":
-			ToStringMethod(s, i, strings.ToUpper)
+			case "(bin)":
+				result := ToDecimal(s[i-1], 2)
+				s[i-1] = result
+				remove(s, i, 1)
 
-		case "(low)", "(low,":
-			ToStringMethod(s, i, strings.ToLower)
+			case "(up)", "(up,":
+				ToStringMethod(s, i, strings.ToUpper)
 
-		case "(cap)", "(cap,":
-			ToStringMethod(s, i, strings.Title)
+			case "(low)", "(low,":
+				ToStringMethod(s, i, strings.ToLower)
+
+			case "(cap)", "(cap,":
+				ToStringMethod(s, i, strings.Title)
+			}
+
+			AOrAnChecker(s, i)
 		}
-
-		PunctuationFixer(s, i)
-		AOrAnChecker(s, i)
+		s = PunctuationFixer(s)
+		finalArr := FilterArr(s)
+		fmt.Println("final:", finalArr)
+		s = finalArr
+		os.WriteFile("result.txt", []byte(strings.Join(s, " ")), 0644)
+		fmt.Println("<INFO> All done! Please check results.txt for final results.")
+	} else {
+		fmt.Println("<ERROR> Need to pass a word and an argument to start!")
 	}
-
-	finalArr := FilterArr(s)
-	fmt.Println("final:", finalArr)
-	s = finalArr
 }
 
 func ToDecimal(s string, base int) string {
@@ -83,6 +91,10 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 
 	if strings.Contains(s[i], "(up,") || strings.Contains(s[i], "(low,") || strings.Contains(s[i], "(cap,") {
 		num, err := strconv.Atoi(s[i+1][:len(s[i+1])-1])
+		if num > i-1 {
+			fmt.Println("<ERROR> Not enough words to convert")
+			os.Exit(0)
+		}
 		for index := i - 1; index >= i-num; index-- {
 			s[index] = fn(s[index])
 		}
@@ -100,31 +112,42 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 	}
 }
 
-func PunctuationFixer(arr []string, i int) {
+// func PunctuationFixer(arr []string, i int) {
 
-	puncArr := []rune(arr[i])
+// 	puncArr := []rune(arr[i])
 
-	for _, c := range puncArr {
-		if unicode.IsPunct(c) {
-			if c != '\'' {
-				// fmt.Println("rune", string(c))
-				// arr[i-1] = arr[i-1] + arr[i]
-				// arr[i] = ""
-				getEachPunc := arr[i]
-				// fmt.Println("punc", string(puncRecheckArr))
-				if unicode.IsPunct(puncArr[0]) {
-					// fmt.Println(string(getEachPunc[0]))
-					arr[i-1] = arr[i-1] + string(getEachPunc[0])
-					removeExtraPunc := getEachPunc[1:]
-					// fmt.Println(removeExtraPunc)
-					arr[i] = removeExtraPunc
-				}
-			} else {
-				fmt.Println(string(c))
-			}
-		}
-	}
+// 	for _, c := range puncArr {
+// 		if unicode.IsPunct(c) {
+// 			if c != '\'' && c != '(' && c != ')' {
+// 				// fmt.Println("rune", string(c))
+// 				// arr[i-1] = arr[i-1] + arr[i]
+// 				// arr[i] = ""
+// 				getEachPunc := arr[i]
+// 				// fmt.Println("punc:", getEachPunc)
+// 				if unicode.IsPunct(puncArr[0]) {
+// 					// fmt.Println(string(getEachPunc[0]))
+// 					arr[i-1] = arr[i-1] + string(getEachPunc[0])
+// 					removeExtraPunc := getEachPunc[1:]
+// 					// fmt.Println(removeExtraPunc)
+// 					arr[i] = removeExtraPunc
+// 				}
+// 			}
+// 		}
+// 	}
+// }
 
+func PunctuationFixer(arr []string) []string {
+	regex := regexp.MustCompile(`\s([\s.,!?:;]+)[.,!?:;]*`)
+	fixedString := regex.ReplaceAllString(strings.Join(arr, " "), "$1")
+	finalArr := strings.Fields(fixedString)
+	return finalArr
+}
+
+func QuoteFixer(arr []string) []string {
+	regex := regexp.MustCompile(`[']\s(.*?)\s[']`)
+	fixedString := regex.ReplaceAllString(strings.Join(arr, " "), "'$1'")
+	finalArr := strings.Fields(fixedString)
+	return finalArr
 }
 
 func AOrAnChecker(arr []string, i int) {
@@ -165,6 +188,4 @@ func DataHandler() []string {
 func main() {
 	arr := DataHandler()
 	CheckArgsAndRun(arr)
-	os.WriteFile("result.txt", []byte(strings.Join(arr, " ")), 0644)
-	// fmt.Println("<INFO> All done! Please check results.txt for final results.")
 }
