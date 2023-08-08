@@ -1,4 +1,4 @@
-package main
+package project
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 func remove(arr []string, index, count int) {
@@ -55,7 +56,7 @@ func CheckArgsAndRun(s []string) {
 				ToStringMethod(s, i, strings.ToLower)
 
 			case "(cap)", "(cap,":
-				ToStringMethod(s, i, strings.Title)
+				ToStringMethod(s, i, Capitalize)
 			}
 
 			AOrAnChecker(s, i)
@@ -146,6 +147,12 @@ func AOrAnChecker(arr []string, i int) {
 	}
 }
 
+func Capitalize(str string) string {
+	runes := []rune(str)
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes)
+}
+
 func DataHandler() []string {
 
 	switch {
@@ -189,9 +196,4 @@ func DataHandler() []string {
 		os.Exit(0)
 		return nil
 	}
-}
-
-func main() {
-	arr := DataHandler()
-	CheckArgsAndRun(arr)
 }
