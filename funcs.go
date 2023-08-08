@@ -65,7 +65,7 @@ func CheckArgsAndRun(s []string) {
 		s = QuoteFixer(s)
 		s = PunctuationFixer(s)
 		finalArr := FilterArr(s)
-		fmt.Println("final:", finalArr)
+		// fmt.Println("final:", finalArr)
 		s = finalArr
 		os.WriteFile(os.Args[2], []byte(strings.Join(s, " ")), 0644)
 		fmt.Println("<INFO> All done! Please check results.txt for final results.")
@@ -189,7 +189,7 @@ func DataHandler() []string {
 			os.Exit(0)
 		}
 
-		fmt.Println("original: ", dataArr)
+		// fmt.Println("original: ", dataArr)
 		return dataArr
 	default:
 		fmt.Println("<ERROR> Missing file name and result text name.")
