@@ -101,11 +101,13 @@ func ToStringMethod(s []string, i int, fn func(string) string) {
 		}
 
 		for index := i - 1; index >= i-num; index-- {
+			s[index] = strings.ToLower(s[index])
 			s[index] = fn(s[index])
 		}
 		remove(s, i, num)
 
 	} else {
+		s[i-1] = strings.ToLower(s[i-1])
 		s[i-1] = fn(s[i-1])
 		remove(s, i, 1)
 	}
@@ -126,8 +128,8 @@ func PunctuationFixer(arr []string) []string {
 }
 
 func QuoteFixer(arr []string) []string {
-	regex := regexp.MustCompile(`[']\s(.*?)\s[']`)
-	fixedString := regex.ReplaceAllString(strings.Join(arr, " "), "'$1'")
+	regex := regexp.MustCompile(`[']\s*(.*?)\s*[']\s*`)
+	fixedString := regex.ReplaceAllString(strings.Join(arr, " "), "'$1' ")
 	finalArr := strings.Fields(fixedString)
 	return finalArr
 }
